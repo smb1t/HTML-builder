@@ -1,28 +1,23 @@
-const {mkdir, copyFile, readdir, rm } = require('fs');
+const { mkdir, copyFile, readdir, rm } = require('fs/promises');
 const path = require('path');
 const defaultPath = path.join(__dirname, 'files');
-const taskPath = {
+const p = {
   src: defaultPath,
   dest: `${defaultPath}-copy`,
 };
 
-(function copyFiles() {
-  rm(taskPath.dest, { recursive:true, force:true },err => {
-    if (err) throw err;
+(async () => {
+  await rm(p.dest, { recursive: true, force: true });
+  await mkdir(p.dest, { recursive: true });
 
-    mkdir(taskPath.dest, { recursive: true }, (err) => {
-      if (err) throw err;
+  const files = await readdir(p.src, { withFileTypes: true });
 
-      readdir(taskPath.src, {withFileTypes: true}, (err, files) => {
-        for (let file of files) {
-          const src = path.join(taskPath.src, file.name);
-          const dest = path.join(taskPath.dest, file.name);
-          copyFile(src, dest, (err) => {
-            if (err) throw err;
-          });
-        }
-      });
+  for (const file of files) {
+    copyFile(
+      path.join(p.src, file.name),
+      path.join(p.dest, file.name)
+    );
+  }
 
-    });
-  });
+  console.log('\x1b[33m%s\x1b[0m', '\nFiles copied!\n');
 })();
