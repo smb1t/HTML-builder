@@ -1,32 +1,38 @@
-const fs = require('fs');
-const {pipeline, Transform } = require('stream');
+const { createReadStream, createWriteStream } = require('fs');
+const { readdir, rm } = require('fs/promises');
+
 const path = require('path');
-const taskPath = {
+const p = {
   src: path.join(__dirname, 'styles'),
   dest: path.join(__dirname, 'project-dist'),
 };
+const bundle = 'bundle.css';
+const target = path.join(p.dest, bundle);
+const ws = createWriteStream(target, 'utf-8');
 
-(function mergeFiles() {
-  const ts = new Transform({
-    transform(chunk, enc, cb) {
-      this.push(`${chunk}\n`);
-      cb();
-    }
-  });
-  fs.readdir(taskPath.src, {withFileTypes: true}, (err, files) => {
-    for (let file of files) {
-      if ( file.isFile() && path.extname(file.name) === '.css' ) {
-        pipeline(
-          fs.createReadStream(path.join(taskPath.src, file.name)),
-          ts,
-          fs.createWriteStream(path.join(taskPath.dest, 'bundle.css')),
-          (err) => {
-            if (err) throw err;
-          }
-        );
+(async () => {
+  await readdir(p.dest, { withFileTypes: true })
+    .then(files => {
+      if (files.indexOf(bundle) >= 0) {
+        rm(target, { force: true });
       }
-    }      
-  });
+    });
+
+  await readdir(p.src, { withFileTypes: true })
+    .then(files => {
+      for (const file of files) {
+        if (file.isFile() && path.extname(file.name) === '.css') {
+          createReadStream(path.join(p.src, file.name), 'utf-8')
+            .on('data', chunk => {
+              ws.write(chunk);
+            });
+        }
+      }
+    })
+    .finally(() => {
+      console.log(
+        '\x1b[33m%s\x1b[0m',
+        `\nFile ${bundle} created successfully!\n`
+      );
+    });
 })();
-
-
