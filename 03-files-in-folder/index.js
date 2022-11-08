@@ -20,7 +20,8 @@ const color = '\x1b[33m%s\x1b[0m';
           if (i === 0) {
             console.log(`${name} - ${ext} - ${stats.size}Kb`);
           } else {
-            console.log(`${name} - ${ext} - ${(stats.size / (1024 ** i)).toFixed(1)}Kb`);
+            // console.log(`${name} - ${ext} - ${(stats.size / (1024 ** i)).toFixed(1)}Kb`);
+            console.log(`${name} - ${ext} - ${(stats.size / (1024 ** i))}Kb`);
           }
         }
       }
