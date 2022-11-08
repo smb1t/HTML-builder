@@ -78,29 +78,35 @@ class HTMLBuilder {
       });
   }
 
-  copyAssets(src, dest) {
-    fsp.mkdir(dest, { recursive: true });
+  async copyAssets(src, dest) {
+    try {
+      await fsp.access(dest);
+      fsp.readdir(src, { withFileTypes: true })
+        .then(async files => {
+          for (const file of files) {
+            const srcFile = path.join(src, file.name);
+            const destFile = path.join(dest, file.name);
 
-    fsp
-      .readdir(src, { withFileTypes: true })
-      .then(files => {
-        for (const file of files) {
-          const srcFile = path.join(src, file.name);
-          const destFile = path.join(dest, file.name);
-
-          if (file.isFile()) {
-            fsp.copyFile(srcFile, destFile)
-              .catch(err => {
-                if (err) throw err;
-              });
-          } else {
-            this.copyAssets(srcFile, destFile);
+            if (file.isFile()) {
+              fsp
+                .copyFile(srcFile, destFile, fs.constants.COPYFILE_FICLONE)
+                .catch(err => {
+                  if (err) throw err;
+                });
+            } else {
+              await fsp
+                .mkdir(destFile, { recursive: true })
+                .then(this.copyAssets(srcFile, destFile));
+            }
           }
-        }
-      })
-      .catch(err => {
-        if (err) throw err;
-      });
+        })
+        .catch(err => {
+          if (err) throw err;
+        });
+    } catch (err) {
+      await fsp.mkdir(dest, { recursive: true });
+      this.copyAssets(src, dest);
+    }
   }
 
   async mergeStyles() {
