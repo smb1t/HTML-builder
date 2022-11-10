@@ -13,10 +13,12 @@ const p = {
   const files = await readdir(p.src, { withFileTypes: true });
 
   for (const file of files) {
-    copyFile(
-      path.join(p.src, file.name),
-      path.join(p.dest, file.name)
-    );
+    if (file.isFile()) {
+      copyFile(
+        path.join(p.src, file.name),
+        path.join(p.dest, file.name)
+      );
+    }
   }
 
   console.log('\x1b[33m%s\x1b[0m', '\nFiles copied!\n');
