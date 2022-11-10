@@ -15,14 +15,19 @@ const color = '\x1b[33m%s\x1b[0m';
         if (file.isFile()) {
           const name = file.name.split('.').slice(0, -1).join('.');
           const ext = path.extname(file.name).split('.').pop();
-          const i = parseInt(Math.floor(Math.log(stats.size) / Math.log(1024)), 10);
+          let size = 0;
 
-          if (i === 0) {
-            console.log(`${name} - ${ext} - ${stats.size}Kb`);
-          } else {
-            // console.log(`${name} - ${ext} - ${(stats.size / (1024 ** i)).toFixed(1)}Kb`);
-            console.log(`${name} - ${ext} - ${(stats.size / (1024 ** i))}Kb`);
+          if (stats.size !== 0) {
+            const i = parseInt(Math.floor(Math.log(stats.size) / Math.log(1024)), 10);
+
+            if (i === 0) {
+              size = stats.size;
+            } else {
+              size = stats.size / (1024 ** i);
+            }
           }
+
+          console.log(`${name} - ${ext} - ${size}Kb`);
         }
       }
     })
