@@ -15,6 +15,7 @@ const color = '\x1b[33m%s\x1b[0m';
         if (file.isFile()) {
           const name = file.name.split('.').slice(0, -1).join('.');
           const ext = path.extname(file.name).split('.').pop();
+          const unit = stats.size < 1000 ? 'Byte' : 'Kb';
           let size = 0;
 
           if (stats.size !== 0) {
@@ -27,7 +28,7 @@ const color = '\x1b[33m%s\x1b[0m';
             }
           }
 
-          console.log(`${name} - ${ext} - ${size}Kb`);
+          console.log(`${name} - ${ext} - ${size}${unit}`);
         }
       }
     })
